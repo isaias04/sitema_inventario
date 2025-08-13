@@ -7,10 +7,19 @@ use Illuminate\Http\Request;
 
 class ProductoController extends Controller
 {
-    // Mostrar listado de productos
-    public function index()
+    // Mostrar listado de productos con búsqueda y paginación
+    public function index(Request $request)
     {
-        $productos = Producto::all();
+        $query = Producto::query();
+
+        if ($request->filled('buscar')) {
+            $buscar = $request->input('buscar');
+            $query->where('nombre', 'like', "%{$buscar}%")
+                  ->orWhere('categoria', 'like', "%{$buscar}%");
+        }
+
+        $productos = $query->paginate(10);
+
         return view('productos.index', compact('productos'));
     }
 
@@ -29,7 +38,6 @@ class ProductoController extends Controller
             'stock' => 'required|integer|min:0',
             'precio_compra' => 'required|numeric|min:0',
             'fecha_vencimiento' => 'nullable|date',
-            // Ya no exigimos precio_venta aquí
         ]);
 
         $datos = $request->all();
@@ -69,7 +77,6 @@ class ProductoController extends Controller
             'stock' => 'required|integer|min:0',
             'precio_compra' => 'required|numeric|min:0',
             'fecha_vencimiento' => 'nullable|date',
-            // Ya no exigimos precio_venta aquí
         ]);
 
         $producto = Producto::findOrFail($id);
