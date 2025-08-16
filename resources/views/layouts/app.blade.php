@@ -46,14 +46,14 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
     <div class="container-fluid">
-        
         <a class="navbar-brand text-center" href="#">Inventario</a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse justify-content-center" id="navbarNavDropdown">
+        <div class="collapse navbar-collapse justify-content-between" id="navbarNavDropdown">
+            <!-- Menú central -->
             <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('entradas.*') ? 'active' : '' }}" href="{{ route('entradas.index') }}">Entradas</a>
@@ -66,11 +66,38 @@
                 </li>
             </ul>
 
-            <!-- Formulario de búsqueda -->
-            <form class="d-flex" action="{{ route('productos.index') }}" method="GET">
+            <!-- Búsqueda -->
+            <form class="d-flex me-3" action="{{ route('productos.index') }}" method="GET">
                 <input class="form-control me-2" type="search" name="buscar" placeholder="Buscar producto..." value="{{ request('buscar') }}">
                 <button class="btn btn-outline-light" type="submit">Buscar</button>
             </form>
+
+            <!-- Perfil y logout -->
+            @auth
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle me-1"></i> {{ Auth::user()->name }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <li>
+                            <a class="dropdown-item" href="#">Perfil</a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button class="dropdown-item text-danger" type="submit">
+                                    <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            @endauth
         </div>
     </div>
 </nav>

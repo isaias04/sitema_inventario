@@ -1,22 +1,32 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\EntradaController;
 use App\Http\Controllers\SalidaController;
 
-// Página principal (opcional)
+// 🛡️ Rutas de autenticación (login, logout, etc.)
+Auth::routes();
+
+// 🏠 Ruta raíz: redirige al login si no está autenticado
 Route::get('/', function () {
-    return redirect()->route('productos.index');
+    return Auth::check()
+    ? redirect()->route('productos.index')
+    : redirect()->route('login');
 });
 
-// 🧾 Rutas para productos
-Route::resource('productos', ProductoController::class);
 
-// Ruta adicional para vista de confirmación de eliminación (si usas delete.blade.php)
-Route::get('productos/{producto}/delete', [ProductoController::class, 'delete'])->name('productos.delete');
+// 🔐 Rutas protegidas: solo accesibles si el usuario ha iniciado sesión
+Route::middleware('auth')->group(function () {
 
-// 📥 Rutas para entradas
-Route::resource('entradas', EntradaController::class);
+    // 📦 Productos
+    Route::resource('productos', ProductoController::class);
+    Route::get('productos/{producto}/delete', [ProductoController::class, 'delete'])->name('productos.delete');
 
-// 📤 Rutas para salidas
-Route::resource('salidas', SalidaController::class);
+    // 📥 Entradas
+    Route::resource('entradas', EntradaController::class);
+
+    // 📤 Salidas
+    Route::resource('salidas', SalidaController::class);
+});
