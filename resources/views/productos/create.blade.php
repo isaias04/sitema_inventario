@@ -19,8 +19,8 @@
     @endif
 
     {{-- Formulario de creación --}}
-    <form action="{{ route('productos.store') }}" method="POST">
-        @csrf
+    <form action="{{ route('productos.store') }}" method="POST" enctype="multipart/form-data">
+        @csrf {{-- ✅ Token CSRF agregado --}}
 
         <div class="mb-3">
             <label for="nombre" class="form-label">Nombre</label>
@@ -54,6 +54,11 @@
         <div class="mb-3">
             <label for="fecha_vencimiento" class="form-label">Fecha de Vencimiento</label>
             <input type="date" name="fecha_vencimiento" class="form-control" value="{{ old('fecha_vencimiento') }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="imagen">Imagen del producto:</label>
+            <input type="file" name="imagen" id="imagen" accept="image/*">
         </div>
 
         <button type="submit" class="btn btn-success">Guardar</button>

@@ -31,29 +31,39 @@ class ProductoController extends Controller
 
     // Guardar nuevo producto
     public function store(Request $request)
-    {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'categoria' => 'required|string|max:255',
-            'stock' => 'required|integer|min:0',
-            'precio_compra' => 'required|numeric|min:0',
-            'fecha_vencimiento' => 'nullable|date',
-        ]);
+{
+    $request->validate([
+        'nombre' => 'required|string|max:255',
+        'categoria' => 'required|string|max:255',
+        'stock' => 'required|integer|min:0',
+        'precio_compra' => 'required|numeric|min:0',
+        'fecha_vencimiento' => 'nullable|date',
+        'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
 
-        $datos = $request->all();
+    // Calcular precio_venta
+    $precio_con_iva = $request->precio_compra * 1.13;
+    $precio_venta = round($precio_con_iva * 1.40, 2);
 
-        // Calcular precio_venta si no viene del formulario
-        $precio_con_iva = $datos['precio_compra'] * 1.13;
-        $datos['precio_venta'] = round($precio_con_iva * 1.40, 2);
-
-        // También calculamos precio_unitario si lo usas
-        $datos['precio_unitario'] = $datos['precio_venta'];
-
-        Producto::create($datos);
-
-        return redirect()->route('productos.index')->with('success', 'Producto creado correctamente.');
+    // Manejar imagen
+    $rutaImagen = null;
+    if ($request->hasFile('imagen')) {
+        $rutaImagen = $request->file('imagen')->store('imagenes_productos', 'public');
     }
 
+    // Crear producto
+    Producto::create([
+        'nombre' => $request->nombre,
+        'categoria' => $request->categoria,
+        'stock' => $request->stock,
+        'precio_compra' => $request->precio_compra,
+        'precio_venta' => $precio_venta,
+        'fecha_vencimiento' => $request->fecha_vencimiento,
+        'imagen' => $rutaImagen,
+    ]);
+
+    return redirect()->route('productos.index')->with('success', 'Producto creado correctamente.');
+}
     // Mostrar detalles de un producto
     public function show($id)
     {
@@ -77,6 +87,7 @@ class ProductoController extends Controller
             'stock' => 'required|integer|min:0',
             'precio_compra' => 'required|numeric|min:0',
             'fecha_vencimiento' => 'nullable|date',
+            
         ]);
 
         $producto = Producto::findOrFail($id);

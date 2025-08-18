@@ -14,6 +14,8 @@ class Producto extends Model
         'precio_compra',
         'precio_venta',
         'fecha_vencimiento',
+        'imagen', 
+
     ];
 
   // Relación: un producto tiene muchas entradas
