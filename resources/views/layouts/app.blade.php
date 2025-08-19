@@ -64,6 +64,12 @@
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('productos.*') ? 'active' : '' }}" href="{{ route('productos.index') }}">Productos</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('categorias.*') ? 'active' : '' }}" href="{{ route('categorias.index') }}">categorias</a>
+                </li>
+                  <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('proveedores.*') ? 'active' : '' }}" href="{{ route('proveedores.index') }}">poveedores</a>
+                </li>
             </ul>
 
             <!-- Búsqueda -->

@@ -29,7 +29,7 @@
             @forelse($productos as $producto)
             <tr>
                 <td>{{ $producto->nombre }}</td>
-                <td>{{ $producto->categoria }}</td>
+                <td>{{ $producto->categoria->nombre ?? 'Sin categoría' }}</td>
                 <td>{{ $producto->stock }}</td>
                 <td>${{ number_format($producto->precio_compra, 2) }}</td>
                 <td>${{ number_format($producto->precio_venta, 2) }}</td>

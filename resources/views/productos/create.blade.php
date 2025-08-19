@@ -26,10 +26,17 @@
             <label for="nombre" class="form-label">Nombre</label>
             <input type="text" name="nombre" class="form-control" value="{{ old('nombre') }}" required>
         </div>
-
-        <div class="mb-3">
-            <label for="categoria" class="form-label">Categoría</label>
-            <input type="text" name="categoria" class="form-control" value="{{ old('categoria') }}" required>
+        
+        <div class="mb-3 col-md-3">
+            <label for="categoria_id" class="form-label">Categoría</label>
+            <select name="categoria_id" class="form-select" required>
+                <option value="">Seleccione una categoría</option>
+                @foreach($categorias as $categoria)
+                <option value="{{ $categoria->id }}" {{ old('categoria_id') == $categoria->id ? 'selected' : '' }}>
+                    {{ $categoria->nombre }}
+                </option>
+                @endforeach
+            </select>
         </div>
 
         <div class="mb-3">

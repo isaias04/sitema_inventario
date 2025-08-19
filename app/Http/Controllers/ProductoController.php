@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Producto;
+use App\Models\Categoria;
 use Illuminate\Http\Request;
 
 class ProductoController extends Controller
@@ -10,12 +11,14 @@ class ProductoController extends Controller
     // Mostrar listado de productos con búsqueda y paginación
     public function index(Request $request)
     {
-        $query = Producto::query();
+        $query = Producto::with('categoria');
 
         if ($request->filled('buscar')) {
             $buscar = $request->input('buscar');
             $query->where('nombre', 'like', "%{$buscar}%")
-                  ->orWhere('categoria', 'like', "%{$buscar}%");
+                  ->orWhereHas('categoria', function ($q) use ($buscar) {
+                      $q->where('nombre', 'like', "%{$buscar}%");
+                  });
         }
 
         $productos = $query->paginate(10);
@@ -26,48 +29,47 @@ class ProductoController extends Controller
     // Mostrar formulario para crear nuevo producto
     public function create()
     {
-        return view('productos.create');
+        $categorias = Categoria::all();
+        return view('productos.create', compact('categorias'));
     }
 
     // Guardar nuevo producto
     public function store(Request $request)
-{
-    $request->validate([
-        'nombre' => 'required|string|max:255',
-        'categoria' => 'required|string|max:255',
-        'stock' => 'required|integer|min:0',
-        'precio_compra' => 'required|numeric|min:0',
-        'fecha_vencimiento' => 'nullable|date',
-        'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-    ]);
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:255',
+            'categoria_id' => 'required|exists:categorias,id',
+            'stock' => 'required|integer|min:0',
+            'precio_compra' => 'required|numeric|min:0',
+            'fecha_vencimiento' => 'nullable|date',
+            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
 
-    // Calcular precio_venta
-    $precio_con_iva = $request->precio_compra * 1.13;
-    $precio_venta = round($precio_con_iva * 1.40, 2);
+        $precio_con_iva = $request->precio_compra * 1.13;
+        $precio_venta = round($precio_con_iva * 1.40, 2);
 
-    // Manejar imagen
-    $rutaImagen = null;
-    if ($request->hasFile('imagen')) {
-        $rutaImagen = $request->file('imagen')->store('imagenes_productos', 'public');
+        $rutaImagen = null;
+        if ($request->hasFile('imagen')) {
+            $rutaImagen = $request->file('imagen')->store('imagenes_productos', 'public');
+        }
+
+        Producto::create([
+            'nombre' => $request->nombre,
+            'categoria_id' => $request->categoria_id,
+            'stock' => $request->stock,
+            'precio_compra' => $request->precio_compra,
+            'precio_venta' => $precio_venta,
+            'fecha_vencimiento' => $request->fecha_vencimiento,
+            'imagen' => $rutaImagen,
+        ]);
+
+        return redirect()->route('productos.index')->with('success', 'Producto creado correctamente.');
     }
 
-    // Crear producto
-    Producto::create([
-        'nombre' => $request->nombre,
-        'categoria' => $request->categoria,
-        'stock' => $request->stock,
-        'precio_compra' => $request->precio_compra,
-        'precio_venta' => $precio_venta,
-        'fecha_vencimiento' => $request->fecha_vencimiento,
-        'imagen' => $rutaImagen,
-    ]);
-
-    return redirect()->route('productos.index')->with('success', 'Producto creado correctamente.');
-}
     // Mostrar detalles de un producto
     public function show($id)
     {
-        $producto = Producto::findOrFail($id);
+        $producto = Producto::with('categoria')->findOrFail($id);
         return view('productos.show', compact('producto'));
     }
 
@@ -75,7 +77,8 @@ class ProductoController extends Controller
     public function edit($id)
     {
         $producto = Producto::findOrFail($id);
-        return view('productos.edit', compact('producto'));
+        $categorias = Categoria::all();
+        return view('productos.edit', compact('producto', 'categorias'));
     }
 
     // Actualizar producto
@@ -83,22 +86,19 @@ class ProductoController extends Controller
     {
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'categoria' => 'required|string|max:255',
+            'categoria_id' => 'required|exists:categorias,id',
             'stock' => 'required|integer|min:0',
             'precio_compra' => 'required|numeric|min:0',
             'fecha_vencimiento' => 'nullable|date',
-            
         ]);
 
         $producto = Producto::findOrFail($id);
+
+        $precio_con_iva = $request->precio_compra * 1.13;
+        $precio_venta = round($precio_con_iva * 1.40, 2);
+
         $datos = $request->all();
-
-        // Calcular precio_venta si no viene del formulario
-        $precio_con_iva = $datos['precio_compra'] * 1.13;
-        $datos['precio_venta'] = round($precio_con_iva * 1.40, 2);
-
-        // También actualizamos precio_unitario si lo usas
-        $datos['precio_unitario'] = $datos['precio_venta'];
+        $datos['precio_venta'] = $precio_venta;
 
         $producto->update($datos);
 

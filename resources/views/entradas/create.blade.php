@@ -15,6 +15,16 @@
             @endforeach
         </select>
     </div>
+    
+    <div class="mb-3 col-md-3">
+        <label for="proveedor_id" class="form-label">Proveedor</label>
+        <select name="proveedor_id" class="form-select" required>
+            <option value="">Seleccione un proveedor</option>
+            @foreach($proveedores as $proveedor)
+            <option value="{{ $proveedor->id }}">{{ $proveedor->nombre_proveedor }}</option>
+            @endforeach
+        </select>
+    </div>
 
     <div class="mb-3">
         <label for="cantidad" class="form-label">Cantidad</label>

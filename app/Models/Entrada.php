@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Proveedor;
+
 
 
 class Entrada extends Model
@@ -20,5 +22,11 @@ class Entrada extends Model
     {
         return $this->belongsTo(Producto::class);
     }
+
+    public function proveedor()
+{
+    return $this->belongsTo(Proveedor::class);
+}
+
 
 }
